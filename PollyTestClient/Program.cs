@@ -22,7 +22,7 @@ namespace PollyTestClient
             
             builder.Services.AddHttpClient<DemoService>((sp, client) =>
             {
-                client.BaseAddress = new Uri("https://localhost:44312/");
+                client.BaseAddress = new Uri(builder.Configuration["demoApi"]);
             }).AddPolicyHandler((sp, msg) => Polly.Policy.WrapAsync(HttpClientPolicies.GetFallbackPolicy(sp, DemoService.FallbackValueFactory),
                                                                     HttpClientPolicies.GetRetryPolicy(sp)));
 

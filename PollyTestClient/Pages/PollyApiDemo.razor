@@ -1,0 +1,56 @@
+﻿@page "/polly-api-demo"
+@inject Services.DemoService DemoClient
+
+<h1>Board Message</h1>
+
+<button @onclick="OnRefreshMessages">Refresh</button>
+<button @onclick="OnFallbackRefreshMessages">Refresh with fallback</button>
+
+@if (loading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (null == messages || !messages.Any())
+{
+    <p><strong>No data available at the moment. Please try again later.</strong></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Title</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var message in messages)
+            {
+                <tr>
+                    <td>@message.Date.ToShortDateString()</td>
+                    <td>@message.Title</td>
+                    <td>@message.Message</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<DTO.BoardMessageDTO> messages;
+    private bool loading = true;
+
+    protected override Task OnInitializedAsync() => FetchMessagesAsync();
+
+    private async Task OnRefreshMessages(MouseEventArgs e) => await FetchMessagesAsync();
+
+    private async Task OnFallbackRefreshMessages(MouseEventArgs e) => await FetchMessagesAsync();
+
+    private async Task FetchMessagesAsync()
+    {
+        loading = true;
+        messages = await DemoClient.GetMessageFromAnotherService();
+        loading = false;
+    }
+}

@@ -11,12 +11,12 @@ namespace WebApplication1.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SlowServerController : ControllerBase
+    public class MessageController : ControllerBase
     {
         static int _getRequestCount = 0;
         static int _deleteRequestCount = 0;
 
-        // GET: api/NonThrottledFaulting
+        // GET: api/GetSlowResponse
         [HttpGet(Name = "GetSlowResponse")]
         public async Task<ActionResult> Get()
         {

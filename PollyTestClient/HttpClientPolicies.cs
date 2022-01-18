@@ -12,7 +12,6 @@ namespace PollyTestClient
 {
     public static class HttpClientPolicies
     {
-        // https://docs.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/implement-http-call-retries-exponential-backoff-polly#add-a-jitter-strategy-to-the-retry-policy
         private static readonly Random _jitterer = new Random();
 
         public static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy(IServiceProvider serviceProvider, int retryCount = 3) =>

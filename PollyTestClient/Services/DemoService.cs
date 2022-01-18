@@ -1,4 +1,5 @@
-﻿using PollyTestClient.DTO;
+﻿using Microsoft.AspNetCore.Components;
+using PollyTestClient.DTO;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,7 +23,13 @@ namespace PollyTestClient.Services
 
         public async Task<IEnumerable<BoardMessageDTO>> GetMessages()
         {
-            var data = await _httpClient.GetFromJsonAsync<IEnumerable<BoardMessageDTO>>("/api/SlowServer");
+            var data = await _httpClient.GetFromJsonAsync<IEnumerable<BoardMessageDTO>>("api/Message");
+            return data;
+        }
+
+        public async Task<IEnumerable<BoardMessageDTO>> GetMessageFromAnotherService()
+        {
+            var data = await _httpClient.GetFromJsonAsync<IEnumerable<BoardMessageDTO>>("/api/ExternalMessage");
             return data;
         }
 

@@ -71,7 +71,7 @@ namespace WebApplication1
 
             services.AddHttpClient("OrderApiServer", client =>
             {
-                client.BaseAddress = new Uri("http://localhost:57696/api/");
+                client.BaseAddress = new Uri("https://localhost:44312/");
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             }).AddPolicyHandlerFromRegistry(PolicySelector);
         }
