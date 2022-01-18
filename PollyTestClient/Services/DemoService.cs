@@ -1,5 +1,8 @@
 ﻿using PollyTestClient.DTO;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
@@ -17,16 +20,16 @@ namespace PollyTestClient.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ResponseDTO> GetFastResponse()
+        public async Task<IEnumerable<BoardMessageDTO>> GetMessages()
         {
-            var data = await _httpClient.GetFromJsonAsync<ResponseDTO>("/api/SlowServer");
+            var data = await _httpClient.GetFromJsonAsync<IEnumerable<BoardMessageDTO>>("/api/SlowServer");
             return data;
         }
 
         public static Task<HttpResponseMessage> FallbackValueFactory(Polly.Context context, CancellationToken cancellationToken)
         {
-            var item = new ResponseDTO();
-            var json = System.Text.Json.JsonSerializer.Serialize(item);
+            var items = Enumerable.Empty<BoardMessageDTO>();
+            var json = System.Text.Json.JsonSerializer.Serialize(items);
             var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")

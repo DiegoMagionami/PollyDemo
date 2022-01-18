@@ -1,19 +1,21 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Cryptography.Xml;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Polly;
-using Polly.Extensions.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Polly.Registry;
 
 namespace WebApplication1
 {
@@ -48,10 +50,46 @@ namespace WebApplication1
                 });
             });
 
-            // Create the retry policy we want
-            var retryPolicy = HttpPolicyExtensions
-                            .HandleTransientHttpError()
-                            .WaitAndRetryAsync(10, retryAttempt => TimeSpan.FromSeconds(retryAttempt));
+            IPolicyRegistry<string> registry = services.AddPolicyRegistry();
+
+            IAsyncPolicy<HttpResponseMessage> httpRetryPolicy =
+                Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+                    .RetryAsync(3);
+
+            registry.Add("SimpleHttpRetryPolicy", httpRetryPolicy);
+
+            IAsyncPolicy<HttpResponseMessage> httWaitAndpRetryPolicy =
+                Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+                    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(retryAttempt));
+
+            registry.Add("SimpleWaitAndRetryPolicy", httWaitAndpRetryPolicy);
+
+            IAsyncPolicy<HttpResponseMessage> noOpPolicy = Policy.NoOpAsync()
+                .AsAsyncPolicy<HttpResponseMessage>();
+
+            registry.Add("NoOpPolicy", noOpPolicy);
+
+            services.AddHttpClient("OrderApiServer", client =>
+            {
+                client.BaseAddress = new Uri("http://localhost:57696/api/");
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            }).AddPolicyHandlerFromRegistry(PolicySelector);
+        }
+
+        private IAsyncPolicy<HttpResponseMessage> PolicySelector(IReadOnlyPolicyRegistry<string> policyRegistry, HttpRequestMessage httpRequestMessage)
+        {
+            if (httpRequestMessage.Method == HttpMethod.Get)
+            {
+                return policyRegistry.Get<IAsyncPolicy<HttpResponseMessage>>("SimpleHttpRetryPolicy");
+            }
+            else if (httpRequestMessage.Method == HttpMethod.Post)
+            {
+                return policyRegistry.Get<IAsyncPolicy<HttpResponseMessage>>("NoOpPolicy");
+            }
+            else
+            {
+                return policyRegistry.Get<IAsyncPolicy<HttpResponseMessage>>("SimpleWaitAndRetryPolicy");
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
