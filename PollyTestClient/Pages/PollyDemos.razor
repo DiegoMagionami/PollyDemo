@@ -1,0 +1,56 @@
+﻿@page "/polly-demos"
+@inject HttpClient Http
+@inject Services.DemoService DemoService
+
+<h1>Demos</h1>
+
+<p>Select a demo</p>
+
+<div class="row gy-5">
+    <div class="col-12">
+        <select id="select-demo" @onchange="SelectDemo">
+            <option>Select an item</option>
+            <option value="0">No Policies</option>
+            <option value="1">Wait and Retries</option>
+        </select>
+    </div>
+</div>
+<hr />
+<div class="row gy-5">
+    <div class="col-12">
+        <button disabled="@IsDisabled" class="btn btn-primary">Start</button>
+        <button class="btn btn-danger">Stop</button>
+    </div>
+</div>
+<hr />
+<p>@result.Message</p>
+@code {
+    protected bool IsDisabled = false;
+    protected string selectedString = string.Empty;
+    protected DTO.ResponseDTO result = new DTO.ResponseDTO();
+
+    private void SelectDemo(ChangeEventArgs e)
+    {
+        selectedString = e.Value.ToString();
+        if (selectedString == "0")
+        {
+            this.IsDisabled = true;
+        }
+    }
+
+    private bool loading = true;
+
+    protected override Task OnInitializedAsync() => FetchFastResponseAsync();
+
+    //private async Task OnRefreshWeather(MouseEventArgs e) => await FetchWeatherDataAsync(false);
+
+    //private async Task OnFallbackRefreshWeather(MouseEventArgs e) => await FetchWeatherDataAsync(true);
+
+    private async Task FetchFastResponseAsync()
+    {
+        loading = true;
+        result = await DemoService.GetFastResponse();
+        loading = false;
+    }
+
+}
