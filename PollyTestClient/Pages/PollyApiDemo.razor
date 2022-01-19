@@ -2,10 +2,14 @@
 @inject Services.DemoService DemoClient
 
 <h1>Board Message</h1>
+<p>
+    You're calling and endpoint that returns some messages. Each message perform an external call in order to retrieve the content and inject in the Message object.<br />
+    Polly is responsible for handling any errors found in retrieving data from the external endpoint
+</p>
 
-<button @onclick="OnRefreshMessages">Refresh</button>
-<button @onclick="OnFallbackRefreshMessages">Refresh with fallback</button>
-
+<button class="btn btn-primary" @onclick="OnLoadMessages">Load Messages</button>
+<br />
+<hr />
 @if (loading)
 {
     <p><em>Loading...</em></p>
@@ -39,13 +43,9 @@ else
 
 @code {
     private IEnumerable<DTO.BoardMessageDTO> messages;
-    private bool loading = true;
+    private bool loading = false;
 
-    protected override Task OnInitializedAsync() => FetchMessagesAsync();
-
-    private async Task OnRefreshMessages(MouseEventArgs e) => await FetchMessagesAsync();
-
-    private async Task OnFallbackRefreshMessages(MouseEventArgs e) => await FetchMessagesAsync();
+    private async Task OnLoadMessages(MouseEventArgs e) => await FetchMessagesAsync();
 
     private async Task FetchMessagesAsync()
     {

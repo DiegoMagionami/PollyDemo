@@ -19,12 +19,14 @@ namespace PollyTestClient
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-            
+
+            int retryAttempts = int.Parse(builder.Configuration["retryAttempts"]);
+
             builder.Services.AddHttpClient<DemoService>((sp, client) =>
             {
                 client.BaseAddress = new Uri(builder.Configuration["demoApi"]);
             }).AddPolicyHandler((sp, msg) => Polly.Policy.WrapAsync(HttpClientPolicies.GetFallbackPolicy(sp, DemoService.FallbackValueFactory),
-                                                                    HttpClientPolicies.GetRetryPolicy(sp)));
+                                                                    HttpClientPolicies.GetRetryPolicy(sp, retryAttempts)));
 
             await builder.Build().RunAsync();
         }

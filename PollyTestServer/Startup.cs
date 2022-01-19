@@ -58,18 +58,18 @@ namespace WebApplication1
 
             registry.Add("SimpleHttpRetryPolicy", httpRetryPolicy);
 
-            IAsyncPolicy<HttpResponseMessage> httWaitAndpRetryPolicy =
+            IAsyncPolicy<HttpResponseMessage> httpWaitAndpRetryPolicy =
                 Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
                     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(retryAttempt));
 
-            registry.Add("SimpleWaitAndRetryPolicy", httWaitAndpRetryPolicy);
+            registry.Add("SimpleWaitAndRetryPolicy", httpWaitAndpRetryPolicy);
 
             IAsyncPolicy<HttpResponseMessage> noOpPolicy = Policy.NoOpAsync()
                 .AsAsyncPolicy<HttpResponseMessage>();
 
             registry.Add("NoOpPolicy", noOpPolicy);
 
-            services.AddHttpClient("OrderApiServer", client =>
+            services.AddHttpClient("TestApiServer", client =>
             {
                 client.BaseAddress = new Uri("https://localhost:44312/");
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -80,7 +80,7 @@ namespace WebApplication1
         {
             if (httpRequestMessage.Method == HttpMethod.Get)
             {
-                return policyRegistry.Get<IAsyncPolicy<HttpResponseMessage>>("SimpleHttpRetryPolicy");
+                return policyRegistry.Get<IAsyncPolicy<HttpResponseMessage>>("SimpleWaitAndRetryPolicy");
             }
             else if (httpRequestMessage.Method == HttpMethod.Post)
             {
@@ -88,7 +88,7 @@ namespace WebApplication1
             }
             else
             {
-                return policyRegistry.Get<IAsyncPolicy<HttpResponseMessage>>("SimpleWaitAndRetryPolicy");
+                return policyRegistry.Get<IAsyncPolicy<HttpResponseMessage>>("SimpleHttpRetryPolicy");
             }
         }
 
