@@ -16,6 +16,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Polly;
 using Polly.Registry;
+using PollyTestServer.Config;
 
 namespace WebApplication1
 {
@@ -74,6 +75,8 @@ namespace WebApplication1
                 client.BaseAddress = new Uri("https://localhost:44312/");
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             }).AddPolicyHandlerFromRegistry(PolicySelector);
+
+            services.Configure<GeneralConfig>(Configuration.GetSection("GeneralConfig"));
         }
 
         private IAsyncPolicy<HttpResponseMessage> PolicySelector(IReadOnlyPolicyRegistry<string> policyRegistry, HttpRequestMessage httpRequestMessage)
